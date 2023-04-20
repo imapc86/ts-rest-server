@@ -1,8 +1,8 @@
 import http from 'http';
 import express, { Application } from 'express';
 import socketIo, { Server as SocketIOServer } from 'socket.io';
-
-//import cors from 'cors'
+import cors from 'cors'
+import * as socketClient from '../sockets/socket';
 
 import itemsRoutes from '../routes/items';
 import { dbConection } from '../database/config';
@@ -55,7 +55,7 @@ class Server{
   middlewares(){
 
     // CORS
-    //this.app.use( cors() );
+    this.app.use( cors() );
 
     // Lectura y parseo del body
     this.app.use( express.json() );
@@ -86,11 +86,13 @@ class Server{
         socket.to(nameRoom).emit('coords', coords);
       });
 
-      socket.on('disconnect', ()=>{
-        console.log('cliente desconectado =>', socket.id);
-      });
+      //* Listen message
+      socketClient.message(socket, this.io);
 
-    });
+      //* Desconectar
+      socketClient.disconnect(socket);
+
+    });  
   }
 
   listen(){
